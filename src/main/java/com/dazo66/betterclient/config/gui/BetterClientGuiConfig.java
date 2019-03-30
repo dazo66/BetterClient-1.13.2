@@ -1,7 +1,6 @@
 package com.dazo66.betterclient.config.gui;
 
 import com.dazo66.betterclient.BetterClient;
-import com.dazo66.betterclient.FunctionsRegister;
 import com.dazo66.betterclient.config.configentrys.AbstractConfigEntry;
 import com.dazo66.betterclient.config.configentrys.BooleanConfigEntry;
 import com.dazo66.betterclient.config.configentrys.IConfigEntry;

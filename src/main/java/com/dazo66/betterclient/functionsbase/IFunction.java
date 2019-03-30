@@ -2,10 +2,8 @@ package com.dazo66.betterclient.functionsbase;
 
 import com.dazo66.betterclient.config.configentrys.AbstractConfigEntry;
 import com.dazo66.betterclient.config.configentrys.IConfigEntry;
-import com.dazo66.betterclient.coremod.IRegisterTransformer;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
@@ -47,12 +45,6 @@ public interface IFunction extends Comparable<IFunction> {
      */
     String getAuthor();
 
-    /**
-     * a list if transformer class
-     *
-     * @return list
-     */
-    List<Class<? extends IRegisterTransformer>> transformerClass();
 
     /**
      * you can put all event {@link SubscribeEvent} to the handler class don't need to register
