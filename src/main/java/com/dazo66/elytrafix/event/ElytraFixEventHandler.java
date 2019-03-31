@@ -24,7 +24,7 @@ import java.lang.reflect.Method;
  */
 public class ElytraFixEventHandler {
 
-    private Minecraft mc = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getInstance();
     private Method method = ReflectionHelper.getInstance().getMethod(Entity.class, "setFlag");
     private long lastTime = System.currentTimeMillis();
 
@@ -39,9 +39,9 @@ public class ElytraFixEventHandler {
             if (mc.gameSettings.keyBindJump.isKeyDown()) {
                 if (event.getItemStack().getItem() instanceof ItemFirework) {
                     ItemStack itemStack = event.getItemStack();
-                    NBTTagCompound nbttagcompound = itemStack.getTagCompound();
+                    NBTTagCompound nbttagcompound = itemStack.getTag();
                     if (nbttagcompound != null) {
-                        NBTTagCompound nbttagcompound1 = nbttagcompound.getCompoundTag("Fireworks");
+                        NBTTagCompound nbttagcompound1 = nbttagcompound.getCompound("Fireworks");
                         int flightLevel = nbttagcompound1.getInteger("Flight");
                         if (flightLevel > 0) {
                             if (!mc.player.isElytraFlying()) {

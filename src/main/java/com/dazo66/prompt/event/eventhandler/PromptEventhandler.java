@@ -8,6 +8,6 @@ import net.minecraft.client.Minecraft;
  */
 public class PromptEventhandler {
 
-    private Minecraft mc = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getInstance();
 
 }

@@ -17,7 +17,7 @@ import static com.dazo66.prompt.util.PromptUtils.playDingSound;
  */
 public class FurnacePromptEventHandler {
 
-    private Minecraft mc = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getInstance();
     private BlockPos furnacePos;
     private List<BlockPos> checkList = new ArrayList<>();
 

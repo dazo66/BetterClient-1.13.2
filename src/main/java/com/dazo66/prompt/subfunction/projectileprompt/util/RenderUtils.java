@@ -28,7 +28,7 @@ public final class RenderUtils {
 
 
     public static void renderOutLine(Entity entity) {
-        Minecraft mc = Minecraft.getMinecraft();
+        Minecraft mc = Minecraft.getInstance();
         float partialTicks = mc.getRenderPartialTicks();
         Entity viewEntity = mc.getRenderViewEntity();
         double d0 = viewEntity.lastTickPosX + (viewEntity.posX - viewEntity.lastTickPosX) * (double) partialTicks;
@@ -62,7 +62,7 @@ public final class RenderUtils {
         GlStateManager.enableBlend();
         GlStateManager.enableColorMaterial();
         GlStateManager.depthFunc(515);
-        GlStateManager.enableDepth();
+        GlStateManager.enableDepthTest();
         GlStateManager.enableAlpha();
         mc.getFramebuffer().bindFramebuffer(false);
         GlStateManager.disableOutlineMode();

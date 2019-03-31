@@ -25,7 +25,7 @@ public class GuiRecipeButton extends GuiButton {
 
     private static final ResourceLocation MERCHANT_GUI_TEXTURE = new ResourceLocation("minecraft", "textures/gui/container/villager.png");
     public boolean hasBeenMove = false;
-    private Minecraft mc = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getInstance();
     private GuiMerchantModifier modifier;
     private GuiMerchant gui;
     private MerchantRecipe recipe;
@@ -50,19 +50,19 @@ public class GuiRecipeButton extends GuiButton {
 
     private void renderBackground(Minecraft mc) {
         GlStateManager.disableLighting();
-        GlStateManager.disableDepth();
+        GlStateManager.disableDepthTest();
         GlStateManager.enableAlpha();
         ConfigJson.SimpleRecipe simpleRecipe = modifier.helper.map.get(recipe);
         if (null != simpleRecipe) {
             if (simpleRecipe.lockPrice) {
                 if (ConfigJson.isRecipeEqual(recipe, simpleRecipe)) {
-                    GlStateManager.color(1.0F, 0.8F, 0.8F, 1.0F);
+                    GlStateManager.color4f(1.0F, 0.8F, 0.8F, 1.0F);
                 }
             } else {
-                GlStateManager.color(1.0F, 0.9F, 0.9F, 1.0F);
+                GlStateManager.color4f(1.0F, 0.9F, 0.9F, 1.0F);
             }
         } else {
-            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+            GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 
         }
         mc.getTextureManager().bindTexture(MERCHANT_GUI_TEXTURE);
@@ -78,7 +78,7 @@ public class GuiRecipeButton extends GuiButton {
     }
 
     private void renderItem(Minecraft mc) {
-        GlStateManager.enableDepth();
+        GlStateManager.enableDepthTest();
         RenderHelper.enableGUIStandardItemLighting();
         GlStateManager.enableRescaleNormal();
         GlStateManager.enableColorMaterial();
@@ -93,7 +93,7 @@ public class GuiRecipeButton extends GuiButton {
         renderItem.renderItemOverlayIntoGUI(mc.fontRenderer, recipe.getItemToBuy(), x + 5, y + 4, s0);
         renderItem.renderItemOverlayIntoGUI(mc.fontRenderer, recipe.getSecondItemToBuy(), x + 18 + 3 * 2 + 1, y + 4, s1);
         renderItem.renderItemOverlayIntoGUI(mc.fontRenderer, recipe.getItemToSell(), x + 18 * 2 + 3 * 4 + 28 + 2 - 10, y + 4, s2);
-        GlStateManager.disableDepth();
+        GlStateManager.disableDepthTest();
         GlStateManager.disableLighting();
     }
 
@@ -111,7 +111,7 @@ public class GuiRecipeButton extends GuiButton {
 
     public void tryRenderItemTooltip(int mouseX, int mouseY) {
         if (visible) {
-            GlStateManager.disableDepth();
+            GlStateManager.disableDepthTest();
             if (mouseX >= x + 5 && mouseX <= x + 23 && mouseY >= y + 4 && mouseY <= y + 22) {
                 renderItemTooltip(mouseX, mouseY, recipe.getItemToBuy());
             } else if (mouseX >= x + 18 + 3 * 2 + 1 && mouseX <= x + 18 + 3 * 2 + 1 + 18 && mouseY >= y + 4 && mouseY <= y + 22) {

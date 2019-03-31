@@ -26,7 +26,7 @@ import java.util.List;
  */
 public class CraftingHelper {
 
-    private Minecraft mc = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getInstance();
     private EntityPlayerSP player = mc.player;
     private Gui gui;
     private Container inventorySlots;

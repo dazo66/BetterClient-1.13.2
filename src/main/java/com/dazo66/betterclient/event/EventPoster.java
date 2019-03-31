@@ -13,7 +13,7 @@ import net.minecraftforge.event.entity.living.LivingDestroyBlockEvent;
 public class EventPoster {
 
     public static boolean onPlayerDestroy(BlockPos pos) {
-        Minecraft mc = Minecraft.getMinecraft();
+        Minecraft mc = Minecraft.getInstance();
         if (mc.player != null && mc.player.world != null) {
             World playerWorld = mc.player.world;
             IBlockState state = playerWorld.getBlockState(pos);

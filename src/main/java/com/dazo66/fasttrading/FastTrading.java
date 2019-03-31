@@ -96,7 +96,7 @@ public class FastTrading extends AbstractFunction {
         FastTrading.isAuto.setValue(b);
         String msg = "FastTradingMod-" + (b ? "ON" : "OFF");
         try {
-            Minecraft.getMinecraft().player.sendMessage(new TextComponentString(msg));
+            Minecraft.getInstance().player.sendMessage(new TextComponentString(msg));
         } catch (Exception e) {
             FastTrading.logger.info(msg);
         }

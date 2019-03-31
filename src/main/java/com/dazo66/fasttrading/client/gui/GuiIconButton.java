@@ -37,13 +37,13 @@ public class GuiIconButton extends GuiButtonPlus {
         if (visible) {
             super.drawButton(mc, mouseX, mouseY, partialTicks);
             GlStateManager.disableLighting();
-            GlStateManager.disableDepth();
+            GlStateManager.disableDepthTest();
             mc.getTextureManager().bindTexture(icon);
             if (textureHeight == -1 || textureWidth == -1) {
                 loadWidthAndHeight(mc.getResourceManager(), icon);
             }
             Gui.drawScaledCustomSizeModalRect(x, y, 0.0f, 0.0f, textureWidth, textureHeight, width, height, (float) textureWidth, (float) textureHeight);
-            GlStateManager.enableDepth();
+            GlStateManager.enableDepthTest();
         }
     }
 
@@ -53,7 +53,7 @@ public class GuiIconButton extends GuiButtonPlus {
     }
 
     public void drawCustomSizedTexture(int x, int y, float u, float v, int width, int height, ResourceLocation texture) {
-        Minecraft mc = Minecraft.getMinecraft();
+        Minecraft mc = Minecraft.getInstance();
         mc.getTextureManager().bindTexture(texture);
         mc.getTextureManager().getTexture(texture).getGlTextureId();
         if (textureHeight == -1 || textureWidth == -1) {

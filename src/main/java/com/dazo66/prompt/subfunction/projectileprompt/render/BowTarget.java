@@ -23,7 +23,7 @@ import java.lang.reflect.Method;
  */
 public class BowTarget implements IProjectileTarget {
 
-    private Minecraft mc = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getInstance();
     private ItemBow itemBow = Items.BOW;
     private ReflectionHelper helper = ReflectionHelper.getInstance();
     private Field randerField;

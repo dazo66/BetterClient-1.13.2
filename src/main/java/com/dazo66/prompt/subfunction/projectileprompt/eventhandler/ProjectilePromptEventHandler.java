@@ -31,7 +31,7 @@ import java.util.HashMap;
  */
 public class ProjectilePromptEventHandler {
 
-    private Minecraft mc = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getInstance();
     private HashMap<Class<? extends Item>, IProjectileTarget> canUseItem = new HashMap<>();
     private Entity lastEntity;
     private static ReflectionHelper helper = ReflectionHelper.getInstance();

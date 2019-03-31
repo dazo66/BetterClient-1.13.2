@@ -21,7 +21,7 @@ import org.lwjgl.input.Mouse;
  */
 public class FastTradingEventHandler {
 
-    private Minecraft mc = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getInstance();
     private GuiMerchant gui;
     private GuiMerchantModifier modifier;
 

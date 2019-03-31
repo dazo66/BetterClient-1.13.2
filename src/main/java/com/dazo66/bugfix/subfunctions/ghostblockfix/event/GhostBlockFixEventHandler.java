@@ -31,7 +31,7 @@ import java.util.Map;
  */
 public class GhostBlockFixEventHandler {
 
-    private Minecraft mc = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getInstance();
     private BlockRecorder recorder = new BlockRecorder();
 
     @SubscribeEvent

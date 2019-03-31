@@ -35,7 +35,7 @@ import static net.minecraft.client.gui.GuiScreen.isShiftKeyDown;
  */
 public class GuiMerchantModifier {
 
-    private Minecraft mc = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getInstance();
     private GuiMerchant gui;
     public TradingHelper helper;
     private MerchantRecipeList merchantRecipeList;

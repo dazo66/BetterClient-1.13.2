@@ -28,7 +28,7 @@ import java.lang.reflect.Field;
 public class BetterClientEventHandler {
 
 
-    private Minecraft mc = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getInstance();
     private long lastPostTime = 0;
     private LangFileUpdater updater;
     private long startInWaterTick = -1;
@@ -108,7 +108,7 @@ public class BetterClientEventHandler {
         if ((Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment")) {
             if (!I18n.hasKey(event.getLangKey())) {
                 String langKey = event.getLangKey();
-                Language lang = Minecraft.getMinecraft().getLanguageManager().getCurrentLanguage();
+                Language lang = Minecraft.getInstance().getLanguageManager().getCurrentLanguage();
                 BetterClient.logger.warn(String.format("TranslateKey not found: key: %s, local: %s", langKey, lang.toString()));
                 updater.put(langKey, null);
             }

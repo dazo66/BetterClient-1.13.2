@@ -22,7 +22,7 @@ public class GuiInventoryModifier {
 
     private GuiInventoryEnum guiType = null;
     private final RecipeBookPage bookPage;
-    private Minecraft mc = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getInstance();
     private GuiContainer gui ;
     private GuiRecipeBook guiRecipeBook;
     private CraftingHelper helper;

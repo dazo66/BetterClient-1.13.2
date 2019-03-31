@@ -11,7 +11,7 @@ import static com.dazo66.prompt.util.PromptUtils.playDingSound;
  */
 public class FishingPromptEventHandler {
 
-    private Minecraft mc = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getInstance();
 
     @SubscribeEvent
     public void onFishCaught(FishingEvent.FishCaughtEvent event){

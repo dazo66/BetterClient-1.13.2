@@ -22,7 +22,7 @@ public class DrawItemInShulkerbox {
     private static final ResourceLocation GUI_TEXTURE = new ResourceLocation("minecraft","textures/gui/container/shulker_box.png");
     public int x = 0;
     public int y = 0;
-    private Minecraft mc = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getInstance();
 
     public void draw(GuiScreen gui, ItemStack itemStack) {
         List<ItemStack> list = arrangementItem(itemStack);
@@ -30,7 +30,7 @@ public class DrawItemInShulkerbox {
             drawItemStack(list, x + 4, y - 100);
         }
 
-        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
+        GlStateManager.color4f(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     public void draw(ItemStack itemStack, ItemStack itemStack1, int x, int y) {
@@ -51,10 +51,10 @@ public class DrawItemInShulkerbox {
 
     private List<ItemStack> arrangementItem(ItemStack itemStack) {
         List<ItemStack> list = new ArrayList<>();
-        NBTTagCompound nbttagcompound = itemStack.getTagCompound();
-        if (nbttagcompound != null && nbttagcompound.hasKey("BlockEntityTag", 10)) {
-            NBTTagCompound blockEntityTag = nbttagcompound.getCompoundTag("BlockEntityTag");
-            if (blockEntityTag.hasKey("Items", 9)) {
+        NBTTagCompound nbttagcompound = itemStack.getTag();
+        if (nbttagcompound != null && nbttagcompound.contains("BlockEntityTag", 10)) {
+            NBTTagCompound blockEntityTag = nbttagcompound.getCompound("BlockEntityTag");
+            if (blockEntityTag.contains("Items", 9)) {
                 NonNullList<ItemStack> nonNullList = NonNullList.withSize(27, ItemStack.EMPTY);
                 ItemStackHelper.loadAllItems(blockEntityTag, nonNullList);
                 if (!ShulkerBoxViewer.isOrganizing.getValue()) {
@@ -83,7 +83,7 @@ public class DrawItemInShulkerbox {
 
     private void drawItemStack(List<ItemStack> list, int x, int y) {
 
-        GlStateManager.color(1F, 1F, 1F, 1F);
+        GlStateManager.color4f(1F, 1F, 1F, 1F);
         int i = (list.size() / 9) + (list.size() % 9 == 0 ? 0 : 1);
         int i1 = i;
         if (i1 == 3) {
@@ -92,13 +92,13 @@ public class DrawItemInShulkerbox {
             i = 3;
         }
         this.mc.getTextureManager().bindTexture(GUI_TEXTURE);
-        GlStateManager.disableDepth();
+        GlStateManager.disableDepthTest();
         GlStateManager.disableLighting();
         drawTexturedModalRect(x - 8, y + 12 + i * 18, 10d, 0, 0, 176, 5);
         drawTexturedModalRect(x - 8, y + 12 + i * 18 + 5, 10d, 0, 16, 176, i1 * 18);
         drawTexturedModalRect(x - 8, y + 17 + i * 18 + i1 * 18, 10d, 0, 160, 176, 6);
-        GlStateManager.enableDepth();
-        GlStateManager.translate(0.0F, 0.0F, 32.0F);
+        GlStateManager.enableDepthTest();
+        GlStateManager.translatef(0.0F, 0.0F, 32.0F);
         int size = list.size();
         for (int l = 0; l < size; l++) {
             drawItemStack(mc.getRenderItem(), list.get(l), (l % 9) * 18 + x, i * 18 + ((l / 9) + 1) * 18 + y + 1);
@@ -110,7 +110,7 @@ public class DrawItemInShulkerbox {
 
     private void drawItemStack1(List<ItemStack> nonNullList, int x, int y) {
         RenderItem itemRender = mc.getRenderItem();
-        GlStateManager.translate(0.0F, 0.0F, 32.0F);
+        GlStateManager.translatef(0.0F, 0.0F, 32.0F);
 
         for (int k = 0; k < 3; ++k) {
             for (int l = 0; l < 9; ++l) {
@@ -125,7 +125,7 @@ public class DrawItemInShulkerbox {
         if (font == null) {
             font = mc.fontRenderer;
         }
-        GlStateManager.enableDepth();
+        GlStateManager.enableDepthTest();
         itemRender.zLevel = 120.0F;
         RenderHelper.enableGUIStandardItemLighting();
         itemRender.renderItemAndEffectIntoGUI(stack, x, y);

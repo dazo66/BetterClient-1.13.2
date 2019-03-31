@@ -38,7 +38,7 @@ public class TradingHelper {
         buy1 = inventorySlots.getSlot(0);
         buy2 = inventorySlots.getSlot(1);
         sell = inventorySlots.getSlot(2);
-        mc = Minecraft.getMinecraft();
+        mc = Minecraft.getInstance();
         buy1 = inventorySlots.getSlot(0);
         buy2 = inventorySlots.getSlot(1);
         sell = inventorySlots.getSlot(2);

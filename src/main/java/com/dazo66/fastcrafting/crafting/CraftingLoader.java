@@ -32,7 +32,7 @@ public class CraftingLoader {
     private static HashMap<String, IRecipe> allRecipemap = new HashMap<>();
 
     public static void unlockRecipe() {
-        Minecraft mc = Minecraft.getMinecraft();
+        Minecraft mc = Minecraft.getInstance();
         RecipeBook recipebook = mc.player.getRecipeBook();
         boolean flag = false;
         for (IRecipe iRecipe : CraftingManager.REGISTRY) {
@@ -51,7 +51,7 @@ public class CraftingLoader {
 
 
     public static void myRecipe() {
-        Minecraft mc = Minecraft.getMinecraft();
+        Minecraft mc = Minecraft.getInstance();
 
         if (!mc.isSingleplayer()) {
             RecipeBook recipebook = mc.player.getRecipeBook();
@@ -68,7 +68,7 @@ public class CraftingLoader {
                 }
             }
         } else {
-            IntegratedServer server = Minecraft.getMinecraft().getIntegratedServer();
+            IntegratedServer server = Minecraft.getInstance().getIntegratedServer();
             server.getPlayerList().getPlayerByUsername(mc.player.getName()).unlockRecipes(myRecipe);
         }
     }

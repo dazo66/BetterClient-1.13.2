@@ -19,12 +19,12 @@ public class ItemStackUtils {
     public static boolean areItemEqualIgnoreCount(ItemStack stackA, ItemStack stackB) {
         if (stackA.getItem() != stackB.getItem()) {
             return false;
-        } else if (stackA.getItemDamage() != stackB.getItemDamage()) {
+        } else if (stackA.getItemDamage() != stackB.getItemDamage()) {//TODO 此处存疑
             return false;
-        } else if (stackA.getTagCompound() == null && stackB.getTagCompound() != null) {
+        } else if (stackA.getTag() == null && stackB.getTag() != null) {
             return false;
         } else {
-            return (stackA.getTagCompound() == null || stackA.getTagCompound().equals(stackB.getTagCompound())) && stackA.areCapsCompatible(stackB);
+            return (stackA.getTag() == null || stackA.getTag().equals(stackB.getTagCompound())) && stackA.areCapsCompatible(stackB);
         }
     }
 

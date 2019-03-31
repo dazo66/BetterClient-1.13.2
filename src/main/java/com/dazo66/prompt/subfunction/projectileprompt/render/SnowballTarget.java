@@ -18,7 +18,7 @@ import java.lang.reflect.Method;
  */
 public class SnowballTarget implements IProjectileTarget {
 
-    private Minecraft mc = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getInstance();
     private ReflectionHelper helper = ReflectionHelper.getInstance();
     private Field inGround;
     private Method findPathMethod;

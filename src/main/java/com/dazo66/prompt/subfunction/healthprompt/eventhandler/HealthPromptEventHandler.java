@@ -16,7 +16,7 @@ import static com.dazo66.prompt.subfunction.healthprompt.HealthPrompt.warnHealth
  */
 public class HealthPromptEventHandler {
 
-    private Minecraft mc = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getInstance();
 
     @SubscribeEvent
     public void onRenderTick(TickEvent.RenderTickEvent event) {

@@ -10,7 +10,7 @@ import net.minecraft.init.SoundEvents;
  */
 public class PromptUtils {
 
-    private static Minecraft mc = Minecraft.getMinecraft();
+    private static Minecraft mc = Minecraft.getInstance();
 
     public static void playDingSound(String subtitle) {
         ISound sound = FakeSubtitleSound.getRecord(SoundEvents.ENTITY_ARROW_HIT_PLAYER, 0.5f, 0.05F, ISound.AttenuationType.LINEAR, (float) mc.player.posX, (float) mc.player.posY, (float) mc.player.posZ, subtitle);

@@ -27,7 +27,7 @@ public class ShulkerBoxViewerEventHandler {
 
     public static ShulkerBoxViewerEventHandler instance = new ShulkerBoxViewerEventHandler();
     private DrawItemInShulkerbox drawer = new DrawItemInShulkerbox();
-    private Minecraft mc = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getInstance();
     private int mouxeX, mouseY = 0;
     private long time = System.currentTimeMillis();
 
