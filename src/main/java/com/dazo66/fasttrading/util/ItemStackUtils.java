@@ -24,7 +24,7 @@ public class ItemStackUtils {
         } else if (stackA.getTag() == null && stackB.getTag() != null) {
             return false;
         } else {
-            return (stackA.getTag() == null || stackA.getTag().equals(stackB.getTagCompound())) && stackA.areCapsCompatible(stackB);
+            return (stackA.getTag() == null || stackA.getTag().equals(stackB.getTag())) && stackA.areCapsCompatible(stackB);
         }
     }
 
@@ -38,10 +38,10 @@ public class ItemStackUtils {
             if (nbtA instanceof NBTTagCompound) {
                 NBTTagCompound nbtCompoundA = (NBTTagCompound) nbtA;
                 NBTTagCompound nbtCompoundB = (NBTTagCompound) nbtB;
-                if (nbtCompoundA.getKeySet().size() != nbtCompoundB.getKeySet().size()) {
+                if (nbtCompoundA.keySet().size() != nbtCompoundB.keySet().size()) {
                     return false;
                 }
-                for (String key : nbtCompoundA.getKeySet()) {
+                for (String key : nbtCompoundA.keySet()) {
                     NBTBase nbtBaseA = nbtCompoundA.getTag(key);
                     NBTBase nbtBaseB = nbtCompoundB.getTag(key);
                     if (!areNbtEqual(nbtBaseA, nbtBaseB)) {

@@ -164,7 +164,7 @@ public class ConfigJson {
 
             private String nbtToJson(NBTTagCompound nbt) {
                 StringBuilder stringBuilder = new StringBuilder("{");
-                Collection<String> collection = nbt.getKeySet();
+                Collection<String> collection = nbt.keySet();
 
                 for (String s : collection) {
                     if (stringBuilder.length() != 1) {

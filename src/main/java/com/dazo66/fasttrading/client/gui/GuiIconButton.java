@@ -32,10 +32,26 @@ public class GuiIconButton extends GuiButtonPlus {
         this.icon = icon;
     }
 
-    @Override
+/*    @Override
     public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
         if (visible) {
             super.drawButton(mc, mouseX, mouseY, partialTicks);
+            GlStateManager.disableLighting();
+            GlStateManager.disableDepthTest();
+            mc.getTextureManager().bindTexture(icon);
+            if (textureHeight == -1 || textureWidth == -1) {
+                loadWidthAndHeight(mc.getResourceManager(), icon);
+            }
+            Gui.drawScaledCustomSizeModalRect(x, y, 0.0f, 0.0f, textureWidth, textureHeight, width, height, (float) textureWidth, (float) textureHeight);
+            GlStateManager.enableDepthTest();
+        }
+    }*/
+
+    @Override
+    public void render(int mouseX, int mouseY, float partialTicks) {
+        if (visible) {
+            Minecraft mc = Minecraft.getInstance();
+            super.render(mouseX, mouseY, partialTicks);
             GlStateManager.disableLighting();
             GlStateManager.disableDepthTest();
             mc.getTextureManager().bindTexture(icon);

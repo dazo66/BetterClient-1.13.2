@@ -37,8 +37,19 @@ public class GuiRecipeButton extends GuiButton {
         gui = modifier.getGui();
     }
 
-    @Override
+/*    @Override
     public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+        if (this.visible) {
+            this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
+            GlStateManager.popMatrix();
+            renderBackground(mc);
+            renderItem(mc);
+            GlStateManager.pushMatrix();
+        }
+    }*/
+
+    @Override
+    public void render(int mouseX, int mouseY, float partialTicks) {
         if (this.visible) {
             this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
             GlStateManager.popMatrix();
@@ -138,7 +149,7 @@ public class GuiRecipeButton extends GuiButton {
             }
             if (shouldDraw) {
                 mc.getRenderItem().zLevel = 120;
-                drawButton(mc, mouseX, mouseY, p);
+                render(mouseX, mouseY, p);
                 mc.getRenderItem().zLevel = 100;
             }
         }

@@ -23,9 +23,28 @@ public class GuiButtonPlus extends GuiButton {
         this.tooltipText = tooltipText;
     }
 
-    @Override
+/*    @Override
     public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
         if (visible) {
+            this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
+            if (isMouseOver()) {
+                hoverTime++;
+            } else {
+                hoverTime = 0;
+            }
+            int k = this.getHoverState(isMouseOver());
+            mc.getTextureManager().bindTexture(resourceButtonDefault);
+            this.drawTexturedModalRect(this.x, this.y, 1, 46 + k * 20 + 1, this.width / 2, this.height / 2);
+            this.drawTexturedModalRect(this.x, this.y + this.height / 2, 1, 46 + k * 20 + 20 - this.height / 2 - 1, this.width / 2, this.height / 2);
+            this.drawTexturedModalRect(this.x + this.width / 2, this.y, 200 - this.width / 2 - 1, 46 + k * 20 + 1, this.width / 2, this.height / 2);
+            this.drawTexturedModalRect(this.x + this.width / 2, this.y + this.height / 2, 200 - this.width / 2 - 1, 46 + k * 20 + 19 - this.height / 2, this.width / 2, this.height / 2);
+        }
+    }*/
+
+    @Override
+    public void render(int mouseX, int mouseY, float partialTicks) {
+        if (visible) {
+            Minecraft mc = Minecraft.getInstance();
             this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
             if (isMouseOver()) {
                 hoverTime++;
