@@ -11,6 +11,7 @@ public class KeyLoader {
     public static KeyBinding key_F4;
 
     public KeyLoader() {
+        //TODO 修改了Keyboard.KEY_F4
         KeyLoader.key_F4 = new KeyBinding("FastTrading ON-OFF", InputMappings.getInputByName("key.keyboard.f4").getKeyCode(), "FastTrading");
         ClientRegistry.registerKeyBinding(KeyLoader.key_F4);
     }
