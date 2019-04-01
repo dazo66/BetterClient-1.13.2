@@ -61,7 +61,7 @@ public class DeserializeItem {
 
     }
 
-    private static NBTBase type(String stringIn) {
+    private static INBTBase type(String stringIn) {
         try {
             if (FLOAT_PATTERN.matcher(stringIn).matches()) {
                 return new NBTTagFloat(Float.parseFloat(stringIn.substring(0, stringIn.length() - 1)));

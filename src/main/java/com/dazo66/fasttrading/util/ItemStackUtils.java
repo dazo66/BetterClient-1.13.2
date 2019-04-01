@@ -10,7 +10,7 @@ import java.util.Iterator;
 /**
  * @author Dazo66
  */
-public class ItemStackUtils {
+public class ItemStackUtils{
 
     public static String[] tooltipI18n(String s, Object... args) {
         return I18n.format(s, args).replace("\\n", "##&&").split("##&&");
@@ -28,7 +28,7 @@ public class ItemStackUtils {
         }
     }
 
-    public static boolean areNbtEqual(NBTBase nbtA, NBTBase nbtB) {
+    public static boolean areNbtEqual(INBTBase nbtA, INBTBase nbtB) {
         if (nbtA == null && nbtB == null) {
             return true;
         } else if (nbtA != null && nbtB != null) {
@@ -42,8 +42,8 @@ public class ItemStackUtils {
                     return false;
                 }
                 for (String key : nbtCompoundA.keySet()) {
-                    NBTBase nbtBaseA = nbtCompoundA.getTag(key);
-                    NBTBase nbtBaseB = nbtCompoundB.getTag(key);
+                    INBTBase nbtBaseA = nbtCompoundA.getTag(key);
+                    INBTBase nbtBaseB = nbtCompoundB.getTag(key);
                     if (!areNbtEqual(nbtBaseA, nbtBaseB)) {
                         return false;
                     }
@@ -55,7 +55,7 @@ public class ItemStackUtils {
                     if (!nbtListB.hasNext()) {
                         return false;
                     }
-                    if (!areNbtEqual((NBTBase) nbtListA.next(), (NBTBase) nbtListB.next())) {
+                    if (!areNbtEqual((INBTBase) nbtListA.next(), (INBTBase) nbtListB.next())) {
                         return false;
                     }
                 }
