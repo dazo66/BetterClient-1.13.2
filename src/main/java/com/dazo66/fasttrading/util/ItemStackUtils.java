@@ -19,7 +19,7 @@ public class ItemStackUtils {
     public static boolean areItemEqualIgnoreCount(ItemStack stackA, ItemStack stackB) {
         if (stackA.getItem() != stackB.getItem()) {
             return false;
-        } else if (stackA.getItemDamage() != stackB.getItemDamage()) {//TODO 此处存疑
+        } else if (stackA.getItem().getDamage(stackA) != stackB.getItem().getDamage(stackB)) {//TODO 此处存疑
             return false;
         } else if (stackA.getTag() == null && stackB.getTag() != null) {
             return false;

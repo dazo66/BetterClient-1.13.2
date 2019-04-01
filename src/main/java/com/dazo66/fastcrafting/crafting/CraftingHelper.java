@@ -405,8 +405,9 @@ public class CraftingHelper {
         return false;
     }
 
+    //TODO 此处getItemDamage()改动存疑
     private boolean isItemEqual(ItemStack one, ItemStack two) {
-        return !(one.isEmpty() || two.isEmpty()) && one.getItem() == two.getItem() && (one.getItemDamage() == two.getItemDamage() || one.getItemDamage() == 32767 || two.getItemDamage() == 32767);
+        return !(one.isEmpty() || two.isEmpty()) && one.getItem() == two.getItem() && (one.getItem().getDamage(one) == two.getItem().getDamage(two) || one.getItem().getDamage(one) == 32767 || two.getItem().getDamage(two) == 32767);
     }
 
     private int[] invSlotIndex() {
