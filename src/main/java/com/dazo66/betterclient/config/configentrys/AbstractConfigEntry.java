@@ -76,8 +76,8 @@ public abstract class AbstractConfigEntry<T> implements IConfigEntry<T> {
 
     public static String[] commentToSave(AbstractConfigEntry entry) {
         return ArrayUtils.addAll(
-                new String[]{String.format("default:[%s]", entry.getDefaultValue()),
-                            String.format("langkey:[%s]", entry.langKey)},
+                new String[]{String.format("default=%s", entry.getDefaultValue()),
+                            String.format("langkey=%s", entry.langKey)},
                 entry.getComment());
     }
 

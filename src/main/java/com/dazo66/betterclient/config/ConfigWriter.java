@@ -1,6 +1,7 @@
-package com.dazo66.betterclient.config.configwriter;
+package com.dazo66.betterclient.config;
 
 import com.dazo66.betterclient.config.configentrys.*;
+import org.apache.commons.io.IOUtils;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -49,7 +50,7 @@ public class ConfigWriter {
 
     private String getIndentation() {
         StringBuilder s = new StringBuilder();
-        int size = stack.size();
+        int size = stack.size() * INDENTATION_COUNT;
         for (int i = 0; i < size; i++) {
             s.append(SPACE);
         }
@@ -76,6 +77,10 @@ public class ConfigWriter {
         return append(getIndentation()).append(string).append("\n");
     }
 
+    private Appendable appendLine() throws IOException {
+        return append(getIndentation()).append("\n");
+    }
+
     private Appendable append(String string) throws IOException {
         return writer.append(string);
     }
@@ -92,9 +97,11 @@ public class ConfigWriter {
                 push("{");
                 save(((CategoryConfigEntry)entry).getValue());
                 pop();
+                appendLine();
             } else if (type != null) {
                 appendComment(AbstractConfigEntry.commentToSave(entry));
                 appendLine(String.format("%s:%s=%s", type, entry.getKey(),entry.getValue()));
+                appendLine();
             }
         }
         return true;
