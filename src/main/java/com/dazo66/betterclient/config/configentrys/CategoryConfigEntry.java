@@ -1,11 +1,7 @@
 package com.dazo66.betterclient.config.configentrys;
 
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
+import com.google.common.collect.Lists;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -13,30 +9,29 @@ import java.util.List;
  */
 public class CategoryConfigEntry extends AbstractConfigEntry<List<AbstractConfigEntry>> {
 
-    CategoryConfigEntry parent = null;
-
-    public CategoryConfigEntry(CategoryConfigEntry parentIn, String keyIn) {
-        super(keyIn, null, null, null);
-        parent = parentIn;
+    public CategoryConfigEntry(String keyIn, String langKeyIn, String[] commentIn) {
+        super(keyIn, langKeyIn, Lists.newArrayList(), commentIn);
     }
 
     public void addValue(AbstractConfigEntry entry) {
+        entry.setPath(this);
         value.add(entry);
     }
 
-    public CategoryConfigEntry getParent() {
-        return parent;
-    }
-
-    public CategoryConfigEntry getSubCategory(String name) {
-        CategoryConfigEntry c = findSubCategory(name);
+    public CategoryConfigEntry getSubCategory(String keyIn, String langKeyIn, String[] commentIn) {
+        CategoryConfigEntry c = findSubCategory(keyIn);
         if (c == null) {
-            CategoryConfigEntry c1 = new CategoryConfigEntry(this, name);
+            CategoryConfigEntry c1 = new CategoryConfigEntry(keyIn, langKeyIn, commentIn);
             this.addValue(c1);
             return c1;
         }else {
             return c;
         }
+    }
+
+    @Override
+    public List<AbstractConfigEntry> getDefaultValue(){
+        return value;
     }
 
     private CategoryConfigEntry findSubCategory(String name) {

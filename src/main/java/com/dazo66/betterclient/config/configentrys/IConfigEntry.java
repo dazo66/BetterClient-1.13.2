@@ -9,17 +9,23 @@ public interface IConfigEntry<T> {
 
     T getDefaultValue();
 
+    void setDefaultValue(T defaultValueIn);
+
     T getValue();
 
     void setValue(T valueIn);
 
     String[] getComment();
 
+    void setComment(String[] commentIn);
+
     String getLangKey();
 
-    void setIsShowInGui(boolean b);
+    void setLangKey(String s);
 
-    boolean getIsShowInGui();
+    void setIsShowInGui(Boolean b);
+
+    Boolean getIsShowInGui();
 
     CategoryConfigEntry getPath();
 

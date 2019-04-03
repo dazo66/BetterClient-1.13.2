@@ -1,13 +1,12 @@
 package com.dazo66.betterclient.config;
 
 import com.dazo66.betterclient.config.configentrys.*;
-import org.apache.commons.io.IOUtils;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 /**
@@ -19,8 +18,8 @@ public class ConfigWriter {
     private Stack<String> stack = new Stack<>();
 
     private static final short INDENTATION_COUNT = 4;
-    private static final Map<Class<? extends AbstractConfigEntry>, String> TYPE_MAP = new HashMap<>();
-    private static final Map<String, String> CHAR_MAP = new HashMap<>();
+    static final BiMap<Class<? extends AbstractConfigEntry>, String> TYPE_MAP = HashBiMap.create();
+    static final BiMap<String, String> CHAR_MAP = HashBiMap.create();
     private static final String SPACE = " ";
 
     static {
