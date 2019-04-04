@@ -6,15 +6,15 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.resources.IResource;
-import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.resources.IResource;
+import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.IOUtils;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-import static net.minecraft.client.renderer.texture.TextureUtil.readBufferedImage;
 
 /**
  * @author Dazo66
@@ -91,7 +91,8 @@ public class GuiIconButton extends GuiButtonPlus {
         IResource iresource = null;
         try {
             iresource = resourceManager.getResource(resourceLocation);
-            BufferedImage bufferedimage = readBufferedImage(iresource.getInputStream());
+            //TODO 这里直接调用的图片读取流
+            BufferedImage bufferedimage = ImageIO.read(iresource.getInputStream());//readBufferedImage(iresource.getInputStream());
 
             textureWidth = bufferedimage.getWidth();
             textureHeight = bufferedimage.getHeight();
