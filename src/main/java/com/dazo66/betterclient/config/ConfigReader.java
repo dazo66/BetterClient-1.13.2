@@ -12,25 +12,33 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * @author Dazo66
  */
+@SuppressWarnings("unchecked")
 public class ConfigReader {
 
     private final static String SEPARATOR = "=";
     private final static Map<Class, Function<String, Object>> FUNCTION_MAP = new HashMap<>();
 
     private final static Pattern pattern = Pattern.compile("");
-    private final static Pattern CATEGORY_START_P = Pattern.compile("[A-Z]+:[a-zA-Z0-9 ]+\\{");
+    //EXAMPLE: "C:category1 {"
+    private final static Pattern CATEGORY_START_P = Pattern.compile("[C]+:[a-zA-Z0-9]+[ ]*\\{[ ]*$");
     private final static Pattern CATEGORY_END_P = Pattern.compile("^}$");
-    private final static Pattern ARRAY_START_P = Pattern.compile("[a-zA-Z0-9]+:[ \\[]+");
+    //EXAMPLE: "SA:array1=["
+    private final static Pattern ARRAY_START_P = Pattern.compile("[A-Z]A:[a-zA-Z0-9]+=\\[[ ]*$");
     private final static Pattern ARRAY_END_P = Pattern.compile("^]$");
-    private final static Pattern OTHER_ENTRY_P = Pattern.compile("[a-zA-Z0-9]+=\\S*");
+    //EXAMPLE: "B:key=true"
+    private final static Pattern OTHER_ENTRY_P = Pattern.compile("[A-Z]:[a-zA-Z0-9 ]+=[ \\S]*");
 
     static final BiMap<String, Class<? extends AbstractConfigEntry>> TYPE_MAP_INVERSE;
     static final BiMap<String, String> CHAR_MAP = ConfigWriter.CHAR_MAP;
@@ -43,7 +51,7 @@ public class ConfigReader {
 
     private static Map<String, Pair<Function, BiConsumer>>
             ATTRIBUTES_GET_SET_FUNC
-            = new HashMap();
+            = new HashMap<>();
 
     static {
         FUNCTION_MAP.put(Boolean.class, Boolean::valueOf);
@@ -98,11 +106,72 @@ public class ConfigReader {
         return list;
     }
 
+    private static Class<? extends AbstractConfigEntry> getType(String s) {
+        s = s.substring(0, s.indexOf(":"));
+        return TYPE_MAP_INVERSE.get(s);
+    }
+
+    //记得返回entry
+    private static AbstractConfigEntry setComment(Collection<String> comment, AbstractConfigEntry emptyEntry) {
+
+    }
+
     public static AbstractConfigEntry assenbleEntry(Collection<String> comment, Collection<String> body) {
         Iterator<String> botyI = body.iterator();
-        String s = botyI.next();
+        String firstLine = botyI.next().trim();
+        Matcher oneEntryM = OTHER_ENTRY_P.matcher(firstLine);
+        AbstractConfigEntry emptyEntry = null;
 
+        if (oneEntryM.find()) {
+            Class<? extends AbstractConfigEntry> clazz = getType(oneEntryM.group());
+            if (clazz != null) {
+                Class type = (Class) ((ParameterizedType) clazz.getGenericInterfaces()[0]).getActualTypeArguments()[0];
+                try {
+                    Constructor<? extends AbstractConfigEntry> constructor = clazz.getConstructor(String.class, String.class, type, String[].class);
+                    String key = getMid(":", "=", firstLine).trim();
+                    emptyEntry = constructor.newInstance(key, null, null, null);
+                    emptyEntry.setValue(assenbleToOne(firstLine.substring(firstLine.indexOf(":") + 1), type).getRight());
+                    return setComment(comment, emptyEntry);
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                throw new ConfigLoadException(String.format("Unsupported config type:%s", firstLine));
+            }
+        }
 
+        Matcher arrayEntryM = ARRAY_START_P.matcher(firstLine);
+        if (arrayEntryM.find()){
+            Class<? extends AbstractConfigEntry> clazz = getType(oneEntryM.group());
+            if (clazz != null) {
+                Class type = (Class) ((ParameterizedType) clazz.getGenericInterfaces()[0]).getActualTypeArguments()[0];
+                Pair pair = assenbleToArray(body, type);
+                try {
+                    Constructor<? extends AbstractConfigEntry> constructor = clazz.getConstructor(String.class, pair.getRight().getClass(), type, String[].class);
+                    emptyEntry = constructor.newInstance((String) pair.getLeft(), null, null, null);
+                    emptyEntry.setValue(pair.getRight());
+                    return setComment(comment, emptyEntry);
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                throw new ConfigLoadException(String.format("Unsupported config type:%s", firstLine));
+            }
+
+        }
+
+        Matcher categotyEntryM = CATEGORY_START_P.matcher(firstLine);
+        if (categotyEntryM.find()) {
+            String key = getMid(":", "{", firstLine).trim();
+            ArrayList<String> list = new ArrayList<>(body);
+            list.remove(0);
+            list.remove(list.size() - 1);
+            CategoryConfigEntry category = new CategoryConfigEntry(key, null, null);
+            category.setValue(assenbleConfigEntries(list));
+            return setComment(comment, category);
+        }
+
+        throw new ConfigLoadException(String.format("Unsupported config type:%s", firstLine));
 
     }
 
@@ -111,33 +180,67 @@ public class ConfigReader {
         ArrayList<String> commentBuffer = Lists.newArrayList();
         ArrayList<String> bodyBuffer = Lists.newArrayList();
         Stack<String> stack = new Stack<>();
+        Iterator<String> iterator = list.iterator();
 
-        for (String s : list) {
-            s = s.trim();
+        while (iterator.hasNext()) {
+            String s = iterator.next().trim();
             if (CATEGORY_START_P.matcher(s).find()) {
                 bodyBuffer.add(s);
                 stack.push("{");
             } else if (CATEGORY_END_P.matcher(s).find()) {
                 if (stack.size() == 0) {
-                    throw new IllegalValueException(s);
+                    throw new ConfigLoadException(s);
                 }
                 if (CHAR_MAP_INVERSE.get(stack.pop()).equals(s)) {
                     bodyBuffer.add(s);
                     if (stack.size() == 0) {
-                        rawPairList.add(new ImmutablePair<>((Collection<String>) commentBuffer.clone(), (Collection<String>) bodyBuffer.clone());
+                        rawPairList.add(new ImmutablePair<>((Collection<String>) commentBuffer.clone(), (Collection<String>) bodyBuffer.clone()));
                         commentBuffer.clear();
                         bodyBuffer.clear();
                     }
                 } else {
                     //符号验证失败
-                    throw new IllegalValueException(s);
+                    throw new ConfigLoadException(s);
                 }
             } else if (s.startsWith("#")) {
                 commentBuffer.add(s.substring(1).trim());
+            } else if (OTHER_ENTRY_P.matcher(s).find()) {
+                bodyBuffer.add(s);
+                if (stack.size() == 0) {
+                    rawPairList.add(new ImmutablePair<>((Collection<String>) commentBuffer.clone(), (Collection<String>) bodyBuffer.clone()));
+                    commentBuffer.clear();
+                    bodyBuffer.clear();
+                }
+            } else if (ARRAY_START_P.matcher(s).find()) {
+                while (!ARRAY_END_P.matcher(s).find()) {
+                    bodyBuffer.add(s);
+                    s = iterator.next();
+                }
+                bodyBuffer.add(s);
             }
         }
         return rawPairList;
+    }
 
+    private static String getMid(String split1, String split2, String s) {
+        int index = s.indexOf(split1) + split1.length();
+        return s.substring(index, s.indexOf(split2, index));
+    }
+
+    private static <T> Pair<String, T[]> assenbleToArray(Collection<String> rawArrayEntry, Class<T> clazz) {
+        Iterator lineIterator = rawArrayEntry.iterator();
+        String firstLine = (String) lineIterator.next();
+        String key = getMid(":", "=", firstLine).trim();
+        List<T> list = new ArrayList<>();
+        String s;
+        while (lineIterator.hasNext()) {
+            s = (String) lineIterator.next();
+            if (ARRAY_END_P.matcher(s).find()) {
+                return new ImmutablePair<>(key, (T[]) list.toArray());
+            }
+            list.add(stringToObj(s, clazz));
+        }
+        return new ImmutablePair<>(key, (T[]) new Object[]{});
     }
 
     private static <V> Pair<String, V> assenbleToOne(String s, Class<? extends V> clazz) {
@@ -148,30 +251,23 @@ public class ConfigReader {
         return new ImmutablePair<>(left, stringToObj(right, clazz));
     }
 
-    @SuppressWarnings("unchecked")
+
     private static <T> T stringToObj(String s, Class<? extends T> clazz) {
         try {
             return (T)FUNCTION_MAP.get(clazz).apply(s);
         }catch (Exception e) {
             if (e instanceof NullPointerException) {
-                throw new IllegalValueException(String.format("The Type Of String:%s Are Not In [Boolean, Integer, Double, Float, String]", s));
+                throw new ConfigLoadException(String.format("The Type Of String:%s Are Not In [Boolean, Integer, Double, Float, String]", s));
             }else {
-                throw new IllegalValueException(String.format("Can't Conversion String:%s to [%s]", s, clazz.getSimpleName()));
+                throw new ConfigLoadException(String.format("Can't Conversion String:%s to [%s]", s, clazz.getSimpleName()));
             }
         }
     }
 
-    private static class IllegalValueException extends IllegalArgumentException {
-        IllegalValueException(String s) {
+    private static class ConfigLoadException extends IllegalArgumentException {
+        ConfigLoadException(String s) {
             super(s);
         }
     }
-
-
-
-
-
-
-
 
 }

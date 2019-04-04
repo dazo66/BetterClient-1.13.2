@@ -1,19 +1,15 @@
 package com.dazo66.betterclient.config.configentrys;
 
-import com.dazo66.betterclient.functionsbase.IFunction;
-
-import javax.annotation.Nullable;
-
 /**
  * @author Dazo66
  */
-public class IntArrayConfigEntry extends AbstractConfigEntry<int[]> {
+public class IntArrayConfigEntry extends ArrayConfigEntry<Integer> {
 
-    public IntArrayConfigEntry(String keyIn, String langKeyIn, int[] defaultValueIn, @Nullable String[] commentIn) {
+    public IntArrayConfigEntry(String keyIn, String langKeyIn, Integer[] defaultValueIn, String[] commentIn) {
         super(keyIn, langKeyIn, defaultValueIn, commentIn);
     }
 
-    public IntArrayConfigEntry(String keyIn, int[] defultValueIn) {
+    public IntArrayConfigEntry(String keyIn, Integer[] defultValueIn) {
         this(keyIn, keyIn, defultValueIn, new String[]{});
     }
 }

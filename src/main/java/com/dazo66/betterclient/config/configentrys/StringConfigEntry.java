@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
  */
 public class StringConfigEntry extends AbstractConfigEntry<String> {
 
-    public StringConfigEntry(String keyIn, String langKeyIn, String defaultValueIn, @Nullable String[] commentIn) {
+    public StringConfigEntry(String keyIn, String langKeyIn, String defaultValueIn, String[] commentIn) {
         super(keyIn, langKeyIn, defaultValueIn, commentIn);
     }
 
