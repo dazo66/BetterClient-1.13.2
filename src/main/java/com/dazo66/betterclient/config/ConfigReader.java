@@ -12,6 +12,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
@@ -27,27 +28,41 @@ import java.util.regex.Pattern;
 @SuppressWarnings("unchecked")
 public class ConfigReader {
 
-    private final static String SEPARATOR = "=";
-    private final static Map<Class, Function<String, Object>> FUNCTION_MAP = new HashMap<>();
+    private final FileReader reader;
 
+    public ConfigReader(FileReader readerIn) {
+        reader = readerIn;
+    }
+
+    public ConfigReader(File file) throws FileNotFoundException {
+        this(new FileReader(file));
+    }
+
+    public List<AbstractConfigEntry> load() throws IOException {
+        return assenbleConfigEntries(IOUtils.readLines(reader));
+    }
+
+    private final static String SEPARATOR = "=";
+
+    private final static Map<Class, Function<String, Object>> FUNCTION_MAP = new HashMap<>();
     private final static Pattern pattern = Pattern.compile("");
     //EXAMPLE: "C:category1 {"
-    private final static Pattern CATEGORY_START_P = Pattern.compile("[C]+:[a-zA-Z0-9]+[ ]*\\{[ ]*$");
+    private final static Pattern CATEGORY_START_P = Pattern.compile("[C]+:[a-zA-Z0-9_\\-]+[ ]*\\{[ ]*$");
     private final static Pattern CATEGORY_END_P = Pattern.compile("^}$");
     //EXAMPLE: "SA:array1=["
-    private final static Pattern ARRAY_START_P = Pattern.compile("[A-Z]A:[a-zA-Z0-9]+=\\[[ ]*$");
+    private final static Pattern ARRAY_START_P = Pattern.compile("[A-Z]A:[a-zA-Z0-9_\\-]+=\\[[ ]*$");
     private final static Pattern ARRAY_END_P = Pattern.compile("^]$");
     //EXAMPLE: "B:key=true"
-    private final static Pattern OTHER_ENTRY_P = Pattern.compile("[A-Z]:[a-zA-Z0-9 ]+=[ \\S]*");
+    private final static Pattern OTHER_ENTRY_P = Pattern.compile("[A-Z]:[a-zA-Z0-9_\\-]+=[ \\S]*");
+    //EXAMPLE: "array1: ["
+    private final static Pattern COMMENT_ARRAY = Pattern.compile("[a-zA-Z0-9_\\-]+:[ ]*\\[$");
+    //example: "key=vaule"
 
+    private final static Pattern COMMENT_ONE = Pattern.compile("[a-zA-Z0-9_\\-]+=[ \\S]*");
     static final BiMap<String, Class<? extends AbstractConfigEntry>> TYPE_MAP_INVERSE;
     static final BiMap<String, String> CHAR_MAP = ConfigWriter.CHAR_MAP;
+
     static final BiMap<String, String> CHAR_MAP_INVERSE = CHAR_MAP.inverse();
-
-    private final FileReader reader;
-    private LineIterator lineIterator;
-    private List<String> commentBuffer = new ArrayList<>();
-
 
     private static Map<String, Pair<Function, BiConsumer>>
             ATTRIBUTES_GET_SET_FUNC
@@ -76,7 +91,7 @@ public class ConfigReader {
 
         Function<AbstractConfigEntry, Object> getDefaultValue = AbstractConfigEntry::getDefaultValue;
         BiConsumer<AbstractConfigEntry, Object> setDefaultValue = AbstractConfigEntry::setDefaultValue;
-        ATTRIBUTES_GET_SET_FUNC.put("comment", new ImmutablePair(getDefaultValue, setDefaultValue));
+        ATTRIBUTES_GET_SET_FUNC.put("default_value", new ImmutablePair(getDefaultValue, setDefaultValue));
 
         Function<AbstractConfigEntry, Object> getIsShowInGui = AbstractConfigEntry::getIsShowInGui;
         BiConsumer<AbstractConfigEntry, Boolean> setIsShowInGui = AbstractConfigEntry::setIsShowInGui;
@@ -85,16 +100,6 @@ public class ConfigReader {
         Function<AbstractConfigEntry, Object> getPath = AbstractConfigEntry::getPath;
         BiConsumer<AbstractConfigEntry, CategoryConfigEntry> setPath = AbstractConfigEntry::setPath;
         ATTRIBUTES_GET_SET_FUNC.put("isshow", new ImmutablePair(getIsShowInGui, setIsShowInGui));
-    }
-
-    public ConfigReader(FileReader readerIn) {
-        reader = readerIn;
-        lineIterator = IOUtils.lineIterator(reader);
-
-    }
-
-    public ConfigReader(File file) throws FileNotFoundException {
-        this(new FileReader(file));
     }
 
     public static List<AbstractConfigEntry> assenbleConfigEntries(Collection<String> strings){
@@ -113,7 +118,39 @@ public class ConfigReader {
 
     //记得返回entry
     private static AbstractConfigEntry setComment(Collection<String> comment, AbstractConfigEntry emptyEntry) {
+        Iterator<String> iterator = comment.iterator();
+        String s;
+        Class type = getGenericInterface(emptyEntry.getClass());
+        layer1 : while (iterator.hasNext()) {
+            s = iterator.next().trim();
+            if (COMMENT_ARRAY.matcher(s).find()) {
+                String key = getMid(":", "[", s).trim();
+                Function function = FUNCTION_MAP.get(type);
+                List<String> list = new ArrayList<>();
+                while (iterator.hasNext()) {
+                     s = iterator.next().trim();
+                    if (!ARRAY_END_P.matcher(s).find()) {
+                        list.add(s);
+                    } else {
+                        break layer1;
+                    }
+                }
+                List list1 = new ArrayList();
+                for (String s1 : list) {
+                    list1.add(function.apply(s1));
+                }
+                ATTRIBUTES_GET_SET_FUNC.get(key).getRight().accept(emptyEntry, list1);
 
+            } else {
+                Pair pair = assenbleToOne(s, type);
+                ATTRIBUTES_GET_SET_FUNC.get(pair.getLeft()).getRight().accept(emptyEntry, pair.getRight());
+            }
+        }
+        return emptyEntry;
+    }
+
+    private static Class getGenericInterface(Class clazz){
+        return (Class) ((ParameterizedType) clazz.getGenericInterfaces()[0]).getActualTypeArguments()[0];
     }
 
     public static AbstractConfigEntry assenbleEntry(Collection<String> comment, Collection<String> body) {
@@ -125,7 +162,7 @@ public class ConfigReader {
         if (oneEntryM.find()) {
             Class<? extends AbstractConfigEntry> clazz = getType(oneEntryM.group());
             if (clazz != null) {
-                Class type = (Class) ((ParameterizedType) clazz.getGenericInterfaces()[0]).getActualTypeArguments()[0];
+                Class type = getGenericInterface(clazz);
                 try {
                     Constructor<? extends AbstractConfigEntry> constructor = clazz.getConstructor(String.class, String.class, type, String[].class);
                     String key = getMid(":", "=", firstLine).trim();
@@ -144,7 +181,7 @@ public class ConfigReader {
         if (arrayEntryM.find()){
             Class<? extends AbstractConfigEntry> clazz = getType(oneEntryM.group());
             if (clazz != null) {
-                Class type = (Class) ((ParameterizedType) clazz.getGenericInterfaces()[0]).getActualTypeArguments()[0];
+                Class type = getGenericInterface(clazz);
                 Pair pair = assenbleToArray(body, type);
                 try {
                     Constructor<? extends AbstractConfigEntry> constructor = clazz.getConstructor(String.class, pair.getRight().getClass(), type, String[].class);
