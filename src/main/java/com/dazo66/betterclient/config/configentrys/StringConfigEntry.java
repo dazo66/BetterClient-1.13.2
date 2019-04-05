@@ -1,17 +1,17 @@
 package com.dazo66.betterclient.config.configentrys;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 
 /**
  * @author Dazo66
  */
 public class StringConfigEntry extends AbstractConfigEntry<String> {
 
-    public StringConfigEntry(String keyIn, String langKeyIn, String defaultValueIn, String[] commentIn) {
+    public StringConfigEntry(@Nonnull String keyIn, String langKeyIn, @Nonnull String defaultValueIn, String[] commentIn) {
         super(keyIn, langKeyIn, defaultValueIn, commentIn);
     }
 
-    public StringConfigEntry(String keyIn, String defultValueIn) {
+    public StringConfigEntry(@Nonnull String keyIn,@Nonnull String defultValueIn) {
         this(keyIn, keyIn, defultValueIn, new String[]{});
     }
 

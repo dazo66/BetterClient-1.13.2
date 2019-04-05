@@ -1,21 +1,20 @@
 package com.dazo66.betterclient.config.configentrys;
 
-import java.util.Arrays;
-import java.util.List;
+import org.apache.commons.lang3.ArrayUtils;
+
+import javax.annotation.Nonnull;
 
 /**
  * @author Dazo66
  */
 public class ArrayConfigEntry<T> extends AbstractConfigEntry<T[]> {
 
-    public ArrayConfigEntry(String keyIn, String langKeyIn, T[] defaultValueIn, String[] commentIn) {
+    public ArrayConfigEntry(@Nonnull String keyIn, String langKeyIn, @Nonnull T[] defaultValueIn, String[] commentIn) {
         super(keyIn, langKeyIn, defaultValueIn, commentIn);
     }
 
-    public T addVaule(T e) {
-        List<T> list = Arrays.asList(this.value);
-        list.add(e);
-        this.setValue((T[]) list.toArray());
+    public T addVaule(@Nonnull T e) {
+        this.setValue(ArrayUtils.add(this.value, e));
         return e;
     }
 

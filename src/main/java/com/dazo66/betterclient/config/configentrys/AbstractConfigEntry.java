@@ -1,12 +1,11 @@
 package com.dazo66.betterclient.config.configentrys;
 
-import org.apache.commons.lang3.ArrayUtils;
+import javax.annotation.Nonnull;
 
 /**
  * @author Dazo66
  */
 public abstract class AbstractConfigEntry<T> implements IConfigEntry<T> {
-
 
     protected String key;
     protected T value;
@@ -16,16 +15,50 @@ public abstract class AbstractConfigEntry<T> implements IConfigEntry<T> {
     protected boolean isShowInGui = true;
     protected CategoryConfigEntry path;
 
-    public AbstractConfigEntry(String keyIn, String langKeyIn, T defaultValueIn, String[] commentIn) {
+
+    public AbstractConfigEntry(@Nonnull String keyIn, String langKeyIn, @Nonnull T defaultValueIn, String[] commentIn) {
         key = keyIn;
         langKey = langKeyIn;
         defaultValue = defaultValueIn;
         comment = commentIn;
+        if (langKey == null) {
+            langKey = key;
+        }
     }
 
     @Override
     public String getKey() {
         return key;
+    }
+
+    @Override
+    public T getDefaultValue() {
+        return defaultValue;
+    }
+
+    @Override
+    public void setDefaultValue(@Nonnull T defaultValueIn) {
+        this.defaultValue = defaultValueIn;
+    }
+
+    @Override
+    public T getValue() {
+        return value == null ? defaultValue : value;
+    }
+
+    @Override
+    public void setValue(@Nonnull T valueIn) {
+        this.value = valueIn;
+    }
+
+    @Override
+    public String[] getComment() {
+        return comment;
+    }
+
+    @Override
+    public void setComment(String[] commentIn) {
+        this.comment = commentIn;
     }
 
     @Override
@@ -38,65 +71,31 @@ public abstract class AbstractConfigEntry<T> implements IConfigEntry<T> {
         this.langKey = langKeyIn;
     }
 
-
     @Override
-    public T getDefaultValue() {
-        return defaultValue;
-    }
-
-    @Override
-    public void setDefaultValue(T defaultValueIn) {
-        this.defaultValue = defaultValueIn;
-    }
-
-    @Override
-    public String[] getComment() {
-        return comment;
-    }
-    @Override
-    public void setComment(String[] commentIn) {
-        this.comment = commentIn;
-    }
-
-    @Override
-    public T getValue() {
-        return value == null ? defaultValue : value;
-    }
-
-    @Override
-    public void setValue(T valueIn) {
-        this.value = valueIn;
-    }
-
-    @Override
-    public Boolean getIsShowInGui() {
+    public boolean getIsShowInGui() {
         return isShowInGui;
     }
 
     @Override
-    public void setIsShowInGui(Boolean b) {
+    public void setIsShowInGui(boolean b) {
         isShowInGui = b;
     }
 
     @Override
-    public CategoryConfigEntry getPath(){
+    public CategoryConfigEntry getPath() {
         return path;
     }
 
     @Override
-    public void setPath(CategoryConfigEntry pathIn){
+    public void setPath(CategoryConfigEntry pathIn) {
         path = pathIn;
-    }
-
-    public static String[] commentToSave(AbstractConfigEntry entry) {
-        return ArrayUtils.addAll(
-                new String[]{String.format("default=%s", entry.getDefaultValue()),
-                            String.format("langkey=%s", entry.langKey)},
-                            entry.getComment());
     }
 
     @Override
     public String toString() {
         return String.format("Name: %s, Key: %s, CurrentValue: %s", this.getClass().getName(), key, getValue());
     }
+
+
+
 }

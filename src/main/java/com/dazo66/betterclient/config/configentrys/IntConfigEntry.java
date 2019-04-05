@@ -1,6 +1,6 @@
 package com.dazo66.betterclient.config.configentrys;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 
 /**
  * @author Dazo66
@@ -8,11 +8,11 @@ import javax.annotation.Nullable;
 public class IntConfigEntry extends AbstractConfigEntry<Integer> {
 
 
-    public IntConfigEntry(String keyIn, String langKeyIn, int defaultValueIn, String[] commentIn) {
+    public IntConfigEntry(@Nonnull String keyIn, String langKeyIn, int defaultValueIn, String[] commentIn) {
         super(keyIn, langKeyIn, defaultValueIn, commentIn);
     }
 
-    public IntConfigEntry(String keyIn, int defultValueIn) {
+    public IntConfigEntry(@Nonnull String keyIn, int defultValueIn) {
         this(keyIn, keyIn, defultValueIn, new String[]{});
     }
 

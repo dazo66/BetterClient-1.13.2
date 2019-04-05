@@ -5,7 +5,6 @@ import com.dazo66.betterclient.config.configentrys.CategoryConfigEntry;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.Lists;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.LineIterator;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -34,6 +33,10 @@ public class ConfigReader {
         reader = readerIn;
     }
 
+    public ConfigReader(String fileName) throws FileNotFoundException {
+        this(new File(fileName));
+    }
+
     public ConfigReader(File file) throws FileNotFoundException {
         this(new FileReader(file));
     }
@@ -42,31 +45,25 @@ public class ConfigReader {
         return assenbleConfigEntries(IOUtils.readLines(reader));
     }
 
+    static final BiMap<String, Class<? extends AbstractConfigEntry>> TYPE_MAP_INVERSE;
+    static final BiMap<String, String> CHAR_MAP = ConfigWriter.CHAR_MAP;
+    static final BiMap<String, String> CHAR_MAP_INVERSE = CHAR_MAP.inverse();
     private final static String SEPARATOR = "=";
-
     private final static Map<Class, Function<String, Object>> FUNCTION_MAP = new HashMap<>();
     private final static Pattern pattern = Pattern.compile("");
     //EXAMPLE: "C:category1 {"
     private final static Pattern CATEGORY_START_P = Pattern.compile("[C]+:[a-zA-Z0-9_\\-]+[ ]*\\{[ ]*$");
     private final static Pattern CATEGORY_END_P = Pattern.compile("^}$");
-    //EXAMPLE: "SA:array1=["
+    //EXAMPLE: "SA:array1:["
     private final static Pattern ARRAY_START_P = Pattern.compile("[A-Z]A:[a-zA-Z0-9_\\-]+=\\[[ ]*$");
     private final static Pattern ARRAY_END_P = Pattern.compile("^]$");
     //EXAMPLE: "B:key=true"
     private final static Pattern OTHER_ENTRY_P = Pattern.compile("[A-Z]:[a-zA-Z0-9_\\-]+=[ \\S]*");
-    //EXAMPLE: "array1: ["
+    //EXAMPLE: "array1:["
     private final static Pattern COMMENT_ARRAY = Pattern.compile("[a-zA-Z0-9_\\-]+:[ ]*\\[$");
-    //example: "key=vaule"
-
     private final static Pattern COMMENT_ONE = Pattern.compile("[a-zA-Z0-9_\\-]+=[ \\S]*");
-    static final BiMap<String, Class<? extends AbstractConfigEntry>> TYPE_MAP_INVERSE;
-    static final BiMap<String, String> CHAR_MAP = ConfigWriter.CHAR_MAP;
-
-    static final BiMap<String, String> CHAR_MAP_INVERSE = CHAR_MAP.inverse();
-
-    private static Map<String, Pair<Function, BiConsumer>>
-            ATTRIBUTES_GET_SET_FUNC
-            = new HashMap<>();
+    //EXAMPLE: "key=vaule"
+    public static Map<String, Pair<Function, BiConsumer>> ATTRIBUTES_GET_SET_FUNC = new HashMap<>();
 
     static {
         FUNCTION_MAP.put(Boolean.class, Boolean::valueOf);
@@ -81,9 +78,9 @@ public class ConfigReader {
         BiConsumer<AbstractConfigEntry, String> setLangKey = AbstractConfigEntry::setLangKey;
         ATTRIBUTES_GET_SET_FUNC.put("langkey", new ImmutablePair(getLangKey, setLangKey));
 
-        Function<AbstractConfigEntry, Object> getValue = AbstractConfigEntry::getValue;
-        BiConsumer<AbstractConfigEntry, Object> setValue = AbstractConfigEntry::setValue;
-        ATTRIBUTES_GET_SET_FUNC.put("vaule", new ImmutablePair(getValue, setValue));
+//        Function<AbstractConfigEntry, Object> getValue = AbstractConfigEntry::getValue;
+//        BiConsumer<AbstractConfigEntry, Object> setValue = AbstractConfigEntry::setValue;
+//        ATTRIBUTES_GET_SET_FUNC.put("vaule", new ImmutablePair(getValue, setValue));
 
         Function<AbstractConfigEntry, Object> getComment = AbstractConfigEntry::getComment;
         BiConsumer<AbstractConfigEntry, String[]> setComment = AbstractConfigEntry::setComment;
@@ -102,7 +99,7 @@ public class ConfigReader {
         ATTRIBUTES_GET_SET_FUNC.put("isshow", new ImmutablePair(getIsShowInGui, setIsShowInGui));
     }
 
-    public static List<AbstractConfigEntry> assenbleConfigEntries(Collection<String> strings){
+    public static List<AbstractConfigEntry> assenbleConfigEntries(Collection<String> strings) {
         List<AbstractConfigEntry> list = Lists.newArrayList();
         List<Pair<Collection<String>, Collection<String>>> rawEntryList = spiltEntry(strings);
         for (Pair<Collection<String>, Collection<String>> pair : rawEntryList) {
@@ -121,14 +118,15 @@ public class ConfigReader {
         Iterator<String> iterator = comment.iterator();
         String s;
         Class type = getGenericInterface(emptyEntry.getClass());
-        layer1 : while (iterator.hasNext()) {
+        layer1:
+        while (iterator.hasNext()) {
             s = iterator.next().trim();
             if (COMMENT_ARRAY.matcher(s).find()) {
-                String key = getMid(":", "[", s).trim();
+                String key = getMid("", "[", s).trim();
                 Function function = FUNCTION_MAP.get(type);
                 List<String> list = new ArrayList<>();
                 while (iterator.hasNext()) {
-                     s = iterator.next().trim();
+                    s = iterator.next().trim();
                     if (!ARRAY_END_P.matcher(s).find()) {
                         list.add(s);
                     } else {
@@ -149,7 +147,7 @@ public class ConfigReader {
         return emptyEntry;
     }
 
-    private static Class getGenericInterface(Class clazz){
+    private static Class getGenericInterface(Class clazz) {
         return (Class) ((ParameterizedType) clazz.getGenericInterfaces()[0]).getActualTypeArguments()[0];
     }
 
@@ -178,7 +176,7 @@ public class ConfigReader {
         }
 
         Matcher arrayEntryM = ARRAY_START_P.matcher(firstLine);
-        if (arrayEntryM.find()){
+        if (arrayEntryM.find()) {
             Class<? extends AbstractConfigEntry> clazz = getType(oneEntryM.group());
             if (clazz != null) {
                 Class type = getGenericInterface(clazz);
@@ -240,7 +238,16 @@ public class ConfigReader {
                     throw new ConfigLoadException(s);
                 }
             } else if (s.startsWith("#")) {
+                String s1 = s.substring(1).trim();
                 commentBuffer.add(s.substring(1).trim());
+                if (COMMENT_ARRAY.matcher(s1).find()) {
+                    s = iterator.next();
+                    while (!ARRAY_END_P.matcher(s).find()) {
+                        commentBuffer.add(s);
+                        s = iterator.next();
+                    }
+                    commentBuffer.add(s);
+                }
             } else if (OTHER_ENTRY_P.matcher(s).find()) {
                 bodyBuffer.add(s);
                 if (stack.size() == 0) {
@@ -288,14 +295,13 @@ public class ConfigReader {
         return new ImmutablePair<>(left, stringToObj(right, clazz));
     }
 
-
     private static <T> T stringToObj(String s, Class<? extends T> clazz) {
         try {
-            return (T)FUNCTION_MAP.get(clazz).apply(s);
-        }catch (Exception e) {
+            return (T) FUNCTION_MAP.get(clazz).apply(s);
+        } catch (Exception e) {
             if (e instanceof NullPointerException) {
                 throw new ConfigLoadException(String.format("The Type Of String:%s Are Not In [Boolean, Integer, Double, Float, String]", s));
-            }else {
+            } else {
                 throw new ConfigLoadException(String.format("Can't Conversion String:%s to [%s]", s, clazz.getSimpleName()));
             }
         }

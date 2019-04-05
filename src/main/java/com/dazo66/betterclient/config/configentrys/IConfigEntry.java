@@ -23,9 +23,9 @@ public interface IConfigEntry<T> {
 
     void setLangKey(String s);
 
-    void setIsShowInGui(Boolean b);
+    boolean getIsShowInGui();
 
-    Boolean getIsShowInGui();
+    void setIsShowInGui(boolean b);
 
     CategoryConfigEntry getPath();
 
