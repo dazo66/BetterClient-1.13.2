@@ -3,7 +3,6 @@ package com.dazo66.betterclient.config;
 import com.dazo66.betterclient.config.configentrys.*;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,10 +10,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 /**
  * @author Dazo66
@@ -26,22 +22,33 @@ public class ConfigWriter {
     private boolean isCommentWriting = false;
 
     private static final short INDENTATION_COUNT = 4;
-    public static final BiMap<Class<? extends AbstractConfigEntry>, String> TYPE_MAP = HashBiMap.create();
+    public static final BiMap<Class<? extends AbstractConfigEntry>, String> TYPE_ENTRY_MAP = HashBiMap.create();
+    public static final BiMap<Class<? extends AbstractConfigEntry>, Class> TYPE_MAP = HashBiMap.create();
     static final BiMap<String, String> CHAR_MAP = HashBiMap.create();
     private static final String SPACE = " ";
-    public static Map<String, Pair<Function, BiConsumer>> ATTRIBUTES_GET_SET_FUNC = ConfigReader.ATTRIBUTES_GET_SET_FUNC;
 
     static {
-        TYPE_MAP.put(BooleanConfigEntry.class, "B");
-        TYPE_MAP.put(CategoryConfigEntry.class, "C");
-        TYPE_MAP.put(DoubleConfigEntry.class, "D");
-        TYPE_MAP.put(IntConfigEntry.class, "I");
-        TYPE_MAP.put(StringConfigEntry.class, "S");
+        TYPE_ENTRY_MAP.put(BooleanConfigEntry.class, "B");
+        TYPE_ENTRY_MAP.put(CategoryConfigEntry.class, "C");
+        TYPE_ENTRY_MAP.put(DoubleConfigEntry.class, "D");
+        TYPE_ENTRY_MAP.put(IntConfigEntry.class, "I");
+        TYPE_ENTRY_MAP.put(StringConfigEntry.class, "S");
 
-        TYPE_MAP.put(BooleanArrayConfigEntry.class, "BA");
-        TYPE_MAP.put(DoubleArrayConfigEntry.class, "DA");
-        TYPE_MAP.put(IntArrayConfigEntry.class, "IA");
-        TYPE_MAP.put(StringArrayConfigEntry.class, "SA");
+        TYPE_ENTRY_MAP.put(BooleanArrayConfigEntry.class, "BA");
+        TYPE_ENTRY_MAP.put(DoubleArrayConfigEntry.class, "DA");
+        TYPE_ENTRY_MAP.put(IntArrayConfigEntry.class, "IA");
+        TYPE_ENTRY_MAP.put(StringArrayConfigEntry.class, "SA");
+
+        TYPE_MAP.put(BooleanConfigEntry.class, Boolean.class);
+        TYPE_MAP.put(CategoryConfigEntry.class, List.class);
+        TYPE_MAP.put(DoubleConfigEntry.class, Double.class);
+        TYPE_MAP.put(IntConfigEntry.class, Integer.class);
+        TYPE_MAP.put(StringConfigEntry.class, String.class);
+
+        TYPE_MAP.put(BooleanArrayConfigEntry.class, Boolean[].class);
+        TYPE_MAP.put(DoubleArrayConfigEntry.class, Double[].class);
+        TYPE_MAP.put(IntArrayConfigEntry.class, Integer[].class);
+        TYPE_MAP.put(StringArrayConfigEntry.class, String[].class);
 
         CHAR_MAP.put("{", "}");
         CHAR_MAP.put("[", "]");
@@ -115,7 +122,7 @@ public class ConfigWriter {
 
     public boolean save(List<AbstractConfigEntry> entryList) throws IOException {
         for (AbstractConfigEntry entry : entryList) {
-            String type = TYPE_MAP.get(entry.getClass());
+            String type = TYPE_ENTRY_MAP.get(entry.getClass());
             if ("C".equals(type)) {
                 appendLine(String.format("C:%s {", entry.getKey()));
                 push("{");
@@ -146,17 +153,16 @@ public class ConfigWriter {
 
     public void commentToSave(AbstractConfigEntry configEntry) {
         startCommentWriter();
-        for (Map.Entry<String, Pair<Function, BiConsumer>> entry : ConfigReader.ATTRIBUTES_GET_SET_FUNC.entrySet()) {
+        for (ConfigReader.CommentAttribute attribute : ConfigReader.CommentAttribute.getAll()) {
             try {
-                Object vaule = entry.getValue().getLeft().apply(configEntry);
+                Object vaule = attribute.getFunction.apply(configEntry);
                 if (vaule == null) {
                     continue;
                 }
                 if (!vaule.getClass().isArray()) {
-                    appendLine(String.format("%s=%s" , configEntry.getKey(), vaule));
+                    appendLine(String.format("%s=%s" , attribute.getKey(), vaule));
                 } else {
-                    //todo array写入
-                    appendLine(String.format("%s:[", entry.getKey()));
+                    appendLine(String.format("%s:[", attribute.getKey()));
                     push("[");
                     endCommentWriter();
                     appendLine(genArray((Object[]) vaule));

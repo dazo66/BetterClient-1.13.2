@@ -14,7 +14,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -42,12 +41,13 @@ public class ConfigReader {
     }
 
     public List<AbstractConfigEntry> load() throws IOException {
-        return assenbleConfigEntries(IOUtils.readLines(reader));
+        return assenbleConfigEntries(null, IOUtils.readLines(reader));
     }
 
-    static final BiMap<String, Class<? extends AbstractConfigEntry>> TYPE_MAP_INVERSE;
-    static final BiMap<String, String> CHAR_MAP = ConfigWriter.CHAR_MAP;
-    static final BiMap<String, String> CHAR_MAP_INVERSE = CHAR_MAP.inverse();
+    public static final BiMap<Class<? extends AbstractConfigEntry>, Class> TYPE_MAP = ConfigWriter.TYPE_MAP;
+    static final BiMap<String, Class<? extends AbstractConfigEntry>> TYPE_ENTRY_MAP_INVERSE;
+    public static final BiMap<String, String> CHAR_MAP;
+    static final BiMap<String, String> CHAR_MAP_INVERSE;
     private final static String SEPARATOR = "=";
     private final static Map<Class, Function<String, Object>> FUNCTION_MAP = new HashMap<>();
     private final static Pattern pattern = Pattern.compile("");
@@ -63,7 +63,6 @@ public class ConfigReader {
     private final static Pattern COMMENT_ARRAY = Pattern.compile("[a-zA-Z0-9_\\-]+:[ ]*\\[$");
     private final static Pattern COMMENT_ONE = Pattern.compile("[a-zA-Z0-9_\\-]+=[ \\S]*");
     //EXAMPLE: "key=vaule"
-    public static Map<String, Pair<Function, BiConsumer>> ATTRIBUTES_GET_SET_FUNC = new HashMap<>();
 
     static {
         FUNCTION_MAP.put(Boolean.class, Boolean::valueOf);
@@ -72,57 +71,60 @@ public class ConfigReader {
         FUNCTION_MAP.put(Float.class, Float::valueOf);
         FUNCTION_MAP.put(String.class, String::toString);
 
-        TYPE_MAP_INVERSE = ConfigWriter.TYPE_MAP.inverse();
 
         Function<AbstractConfigEntry, Object> getLangKey = AbstractConfigEntry::getLangKey;
         BiConsumer<AbstractConfigEntry, String> setLangKey = AbstractConfigEntry::setLangKey;
-        ATTRIBUTES_GET_SET_FUNC.put("langkey", new ImmutablePair(getLangKey, setLangKey));
+        CommentAttribute.registerAttribute("lang_key", String.class, getLangKey, setLangKey);
 
-//        Function<AbstractConfigEntry, Object> getValue = AbstractConfigEntry::getValue;
-//        BiConsumer<AbstractConfigEntry, Object> setValue = AbstractConfigEntry::setValue;
-//        ATTRIBUTES_GET_SET_FUNC.put("vaule", new ImmutablePair(getValue, setValue));
+        //        Function<AbstractConfigEntry, Object> getValue = AbstractConfigEntry::getValue;
+        //        BiConsumer<AbstractConfigEntry, Object> setValue = AbstractConfigEntry::setValue;
+        //        ATTRIBUTES_GET_SET_FUNC.put("vaule", new ImmutablePair(getValue, setValue));
 
         Function<AbstractConfigEntry, Object> getComment = AbstractConfigEntry::getComment;
         BiConsumer<AbstractConfigEntry, String[]> setComment = AbstractConfigEntry::setComment;
-        ATTRIBUTES_GET_SET_FUNC.put("comment", new ImmutablePair(getComment, getComment));
+        CommentAttribute.registerAttribute("comment", String[].class, getComment, setComment);
 
         Function<AbstractConfigEntry, Object> getDefaultValue = AbstractConfigEntry::getDefaultValue;
         BiConsumer<AbstractConfigEntry, Object> setDefaultValue = AbstractConfigEntry::setDefaultValue;
-        ATTRIBUTES_GET_SET_FUNC.put("default_value", new ImmutablePair(getDefaultValue, setDefaultValue));
+        CommentAttribute.registerAttribute("default_value", Object.class, getDefaultValue, setDefaultValue);
 
         Function<AbstractConfigEntry, Object> getIsShowInGui = AbstractConfigEntry::getIsShowInGui;
         BiConsumer<AbstractConfigEntry, Boolean> setIsShowInGui = AbstractConfigEntry::setIsShowInGui;
-        ATTRIBUTES_GET_SET_FUNC.put("isshow", new ImmutablePair(getIsShowInGui, setIsShowInGui));
+        CommentAttribute.registerAttribute("is_show", Boolean.class, getIsShowInGui, setIsShowInGui);
 
-        Function<AbstractConfigEntry, Object> getPath = AbstractConfigEntry::getPath;
-        BiConsumer<AbstractConfigEntry, CategoryConfigEntry> setPath = AbstractConfigEntry::setPath;
-        ATTRIBUTES_GET_SET_FUNC.put("isshow", new ImmutablePair(getIsShowInGui, setIsShowInGui));
+        TYPE_ENTRY_MAP_INVERSE = ConfigWriter.TYPE_ENTRY_MAP.inverse();
+        CHAR_MAP = ConfigWriter.CHAR_MAP;
+        CHAR_MAP_INVERSE = CHAR_MAP.inverse();
     }
 
-    public static List<AbstractConfigEntry> assenbleConfigEntries(Collection<String> strings) {
+    public static List<AbstractConfigEntry> assenbleConfigEntries(CategoryConfigEntry path, Collection<String> strings) {
         List<AbstractConfigEntry> list = Lists.newArrayList();
         List<Pair<Collection<String>, Collection<String>>> rawEntryList = spiltEntry(strings);
         for (Pair<Collection<String>, Collection<String>> pair : rawEntryList) {
-            list.add(assenbleEntry(pair.getLeft(), pair.getRight()));
+            AbstractConfigEntry entry = assenbleEntry(pair.getLeft(), pair.getRight());
+            if (path != null) {
+                entry.setPath(path);
+            }
+            list.add(entry);
         }
         return list;
     }
 
     private static Class<? extends AbstractConfigEntry> getType(String s) {
         s = s.substring(0, s.indexOf(":"));
-        return TYPE_MAP_INVERSE.get(s);
+        return TYPE_ENTRY_MAP_INVERSE.get(s);
     }
 
     //记得返回entry
     private static AbstractConfigEntry setComment(Collection<String> comment, AbstractConfigEntry emptyEntry) {
         Iterator<String> iterator = comment.iterator();
         String s;
-        Class type = getGenericInterface(emptyEntry.getClass());
         layer1:
         while (iterator.hasNext()) {
             s = iterator.next().trim();
             if (COMMENT_ARRAY.matcher(s).find()) {
-                String key = getMid("", "[", s).trim();
+                String key = getMid("", ":", s).trim();
+                Class type = CommentAttribute.getType(key);
                 Function function = FUNCTION_MAP.get(type);
                 List<String> list = new ArrayList<>();
                 while (iterator.hasNext()) {
@@ -137,18 +139,20 @@ public class ConfigReader {
                 for (String s1 : list) {
                     list1.add(function.apply(s1));
                 }
-                ATTRIBUTES_GET_SET_FUNC.get(key).getRight().accept(emptyEntry, list1);
+                CommentAttribute.getSetFunction(emptyEntry.getKey()).accept(emptyEntry, list1.toArray());
 
             } else {
-                Pair pair = assenbleToOne(s, type);
-                ATTRIBUTES_GET_SET_FUNC.get(pair.getLeft()).getRight().accept(emptyEntry, pair.getRight());
+                Class type = CommentAttribute.getType(s.substring(0, s.indexOf("=")));
+                Pair<String, Object> pair;
+                if (type == Object.class) {
+                    pair = assenbleToOne(s, TYPE_MAP.get(emptyEntry.getClass()));
+                } else {
+                    pair = assenbleToOne(s, type);
+                }
+                CommentAttribute.getSetFunction(pair.getLeft()).accept(emptyEntry, pair.getRight());
             }
         }
         return emptyEntry;
-    }
-
-    private static Class getGenericInterface(Class clazz) {
-        return (Class) ((ParameterizedType) clazz.getGenericInterfaces()[0]).getActualTypeArguments()[0];
     }
 
     public static AbstractConfigEntry assenbleEntry(Collection<String> comment, Collection<String> body) {
@@ -160,12 +164,13 @@ public class ConfigReader {
         if (oneEntryM.find()) {
             Class<? extends AbstractConfigEntry> clazz = getType(oneEntryM.group());
             if (clazz != null) {
-                Class type = getGenericInterface(clazz);
+                Class type = TYPE_MAP.get(clazz);
                 try {
                     Constructor<? extends AbstractConfigEntry> constructor = clazz.getConstructor(String.class, String.class, type, String[].class);
-                    String key = getMid(":", "=", firstLine).trim();
-                    emptyEntry = constructor.newInstance(key, null, null, null);
-                    emptyEntry.setValue(assenbleToOne(firstLine.substring(firstLine.indexOf(":") + 1), type).getRight());
+                    Pair<String, Object> pair = assenbleToOne(
+                            firstLine.substring(firstLine.indexOf(":") + 1), type);
+                    emptyEntry = constructor.newInstance(pair.getLeft(), null, pair.getRight(), null);
+                    emptyEntry.setValue(pair.getRight());
                     return setComment(comment, emptyEntry);
                 } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
                     e.printStackTrace();
@@ -179,7 +184,7 @@ public class ConfigReader {
         if (arrayEntryM.find()) {
             Class<? extends AbstractConfigEntry> clazz = getType(oneEntryM.group());
             if (clazz != null) {
-                Class type = getGenericInterface(clazz);
+                Class type = TYPE_MAP.get(clazz);
                 Pair pair = assenbleToArray(body, type);
                 try {
                     Constructor<? extends AbstractConfigEntry> constructor = clazz.getConstructor(String.class, pair.getRight().getClass(), type, String[].class);
@@ -202,7 +207,7 @@ public class ConfigReader {
             list.remove(0);
             list.remove(list.size() - 1);
             CategoryConfigEntry category = new CategoryConfigEntry(key, null, null);
-            category.setValue(assenbleConfigEntries(list));
+            category.setValue(assenbleConfigEntries(category, list));
             return setComment(comment, category);
         }
 
@@ -226,7 +231,7 @@ public class ConfigReader {
                 if (stack.size() == 0) {
                     throw new ConfigLoadException(s);
                 }
-                if (CHAR_MAP_INVERSE.get(stack.pop()).equals(s)) {
+                if (CHAR_MAP.get(stack.pop()).equals(s)) {
                     bodyBuffer.add(s);
                     if (stack.size() == 0) {
                         rawPairList.add(new ImmutablePair<>((Collection<String>) commentBuffer.clone(), (Collection<String>) bodyBuffer.clone()));
@@ -238,15 +243,19 @@ public class ConfigReader {
                     throw new ConfigLoadException(s);
                 }
             } else if (s.startsWith("#")) {
-                String s1 = s.substring(1).trim();
-                commentBuffer.add(s.substring(1).trim());
-                if (COMMENT_ARRAY.matcher(s1).find()) {
-                    s = iterator.next();
-                    while (!ARRAY_END_P.matcher(s).find()) {
-                        commentBuffer.add(s);
+                if (stack.size() == 0) {
+                    String s1 = s.substring(1).trim();
+                    commentBuffer.add(s.substring(1).trim());
+                    if (COMMENT_ARRAY.matcher(s1).find()) {
                         s = iterator.next();
+                        while (!ARRAY_END_P.matcher(s).find()) {
+                            commentBuffer.add(s);
+                            s = iterator.next();
+                        }
+                        commentBuffer.add(s);
                     }
-                    commentBuffer.add(s);
+                } else {
+                    bodyBuffer.add(s);
                 }
             } else if (OTHER_ENTRY_P.matcher(s).find()) {
                 bodyBuffer.add(s);
@@ -311,6 +320,70 @@ public class ConfigReader {
         ConfigLoadException(String s) {
             super(s);
         }
+    }
+
+    static class CommentAttribute {
+        Class type;
+        String key;
+        Function getFunction;
+        BiConsumer setFunction;
+
+        private static List<CommentAttribute> all = new ArrayList<>();
+
+        private CommentAttribute(String keyIn, Class typeIn, Function getFunctionIn, BiConsumer setFunctionIn){
+            type = typeIn;
+            key = keyIn;
+            getFunction = getFunctionIn;
+            setFunction = setFunctionIn;
+            all.add(this);
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public Class getType(){
+            return type;
+        }
+
+        public Function getGetFunction(){
+            return getFunction;
+        }
+
+        public BiConsumer getSetFunction(){
+            return setFunction;
+        }
+
+        public static void registerAttribute(String keyIn, Class typeIn, Function getFunctionIn, BiConsumer setFunctionIn){
+            all.add(new CommentAttribute(keyIn, typeIn, getFunctionIn, setFunctionIn));
+        }
+
+        public static Class getType(String key){
+            return findAttribute(key).type;
+        }
+
+        public static Function getGetFunction(String key){
+            return findAttribute(key).getFunction;
+        }
+
+        public static BiConsumer getSetFunction(String key){
+            return findAttribute(key).setFunction;
+        }
+
+        public static CommentAttribute findAttribute(String key){
+            for (CommentAttribute a : CommentAttribute.all) {
+                if (key.equals(a.key)) {
+                    return a;
+                }
+            }
+            return null;
+        }
+
+        public static List<CommentAttribute> getAll(){
+            return all;
+        }
+
+
     }
 
 }
