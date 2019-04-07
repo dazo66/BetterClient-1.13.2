@@ -97,15 +97,19 @@ public class ConfigReader {
         CHAR_MAP_INVERSE = CHAR_MAP.inverse();
     }
 
-    public static List<AbstractConfigEntry> assenbleConfigEntries(CategoryConfigEntry path, Collection<String> strings) {
+    private static List<AbstractConfigEntry> assenbleConfigEntries(CategoryConfigEntry path, Collection<String> strings) {
         List<AbstractConfigEntry> list = Lists.newArrayList();
         List<Pair<Collection<String>, Collection<String>>> rawEntryList = spiltEntry(strings);
         for (Pair<Collection<String>, Collection<String>> pair : rawEntryList) {
-            AbstractConfigEntry entry = assenbleEntry(pair.getLeft(), pair.getRight());
-            if (path != null) {
-                entry.setPath(path);
+            try {
+                AbstractConfigEntry entry = assenbleEntry(pair.getLeft(), pair.getRight());
+                if (path != null) {
+                    entry.setPath(path);
+                }
+                list.add(entry);
+            } catch (Exception e) {
+
             }
-            list.add(entry);
         }
         return list;
     }
@@ -155,7 +159,7 @@ public class ConfigReader {
         return emptyEntry;
     }
 
-    public static AbstractConfigEntry assenbleEntry(Collection<String> comment, Collection<String> body) {
+    private static AbstractConfigEntry assenbleEntry(Collection<String> comment, Collection<String> body) {
         Iterator<String> botyI = body.iterator();
         String firstLine = botyI.next().trim();
         Matcher oneEntryM = OTHER_ENTRY_P.matcher(firstLine);

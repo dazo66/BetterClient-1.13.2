@@ -14,9 +14,15 @@ public class CategoryConfigEntry extends AbstractConfigEntry<List<AbstractConfig
         super(keyIn, langKeyIn, Lists.newArrayList(), commentIn);
     }
 
+    public boolean containEntry(AbstractConfigEntry entry){
+        return this.getValue().contains(entry);
+    }
+
     public void addValue(AbstractConfigEntry entry) {
-        entry.setPath(this);
         getValue().add(entry);
+        if (entry != this) {
+            entry.setPath(this);
+        }
     }
 
     public CategoryConfigEntry getSubCategory(@Nonnull String keyIn, String langKeyIn, String[] commentIn) {

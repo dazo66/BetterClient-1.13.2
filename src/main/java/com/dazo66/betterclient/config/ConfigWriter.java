@@ -151,7 +151,7 @@ public class ConfigWriter {
         return list.toArray(new String[0]);
     }
 
-    public void commentToSave(AbstractConfigEntry configEntry) {
+    private void commentToSave(AbstractConfigEntry configEntry) {
         startCommentWriter();
         for (ConfigReader.CommentAttribute attribute : ConfigReader.CommentAttribute.getAll()) {
             try {
@@ -160,7 +160,7 @@ public class ConfigWriter {
                     continue;
                 }
                 if (!vaule.getClass().isArray()) {
-                    appendLine(String.format("%s=%s" , attribute.getKey(), vaule));
+                    appendLine(String.format("%s=%s", attribute.getKey(), vaule));
                 } else {
                     appendLine(String.format("%s:[", attribute.getKey()));
                     push("[");
@@ -169,18 +169,18 @@ public class ConfigWriter {
                     pop();
                     startCommentWriter();
                 }
-            }catch (Exception e) {
+            } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
         }
         endCommentWriter();
     }
 
-    private void startCommentWriter(){
+    private void startCommentWriter() {
         isCommentWriting = true;
     }
 
-    private void endCommentWriter(){
+    private void endCommentWriter() {
         isCommentWriting = false;
     }
 

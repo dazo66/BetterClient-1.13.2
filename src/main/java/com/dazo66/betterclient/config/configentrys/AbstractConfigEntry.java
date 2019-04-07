@@ -89,6 +89,9 @@ public abstract class AbstractConfigEntry<T> implements IConfigEntry<T> {
     @Override
     public void setPath(CategoryConfigEntry pathIn) {
         path = pathIn;
+        if (!pathIn.containEntry(this)) {
+            pathIn.addValue(this);
+        }
     }
 
     @Override
