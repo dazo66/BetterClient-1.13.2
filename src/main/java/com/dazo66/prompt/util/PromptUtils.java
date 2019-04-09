@@ -14,7 +14,7 @@ public class PromptUtils {
 
     public static void playDingSound(String subtitle) {
         ISound sound = FakeSubtitleSound.getRecord(SoundEvents.ENTITY_ARROW_HIT_PLAYER, 0.5f, 0.05F, ISound.AttenuationType.LINEAR, (float) mc.player.posX, (float) mc.player.posY, (float) mc.player.posZ, subtitle);
-        mc.getSoundHandler().playSound(sound);
+        mc.getSoundHandler().play(sound);
     }
 
 }

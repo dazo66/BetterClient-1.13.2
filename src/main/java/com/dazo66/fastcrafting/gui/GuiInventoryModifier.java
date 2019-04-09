@@ -64,7 +64,7 @@ public class GuiInventoryModifier {
             return;
         }
         helper.craftMode(GuiContainer.isShiftKeyDown(), GuiContainer.isCtrlKeyDown());
-//        mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+//        mc.getSoundHandler().play(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
     }
 
     public Container getInventorySlots() {

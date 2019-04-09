@@ -3,6 +3,7 @@ package com.dazo66.fasttrading.client.gui;
 import com.dazo66.betterclient.client.audio.FakeSubtitleSound;
 import com.dazo66.fasttrading.config.ConfigJson;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.ISound;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiMerchant;
 import net.minecraft.client.renderer.GlStateManager;
@@ -62,7 +63,7 @@ public class GuiRecipeButton extends GuiButton {
     private void renderBackground(Minecraft mc) {
         GlStateManager.disableLighting();
         GlStateManager.disableDepthTest();
-        GlStateManager.enableAlpha();
+        GlStateManager.enableAlphaTest();
         ConfigJson.SimpleRecipe simpleRecipe = modifier.helper.map.get(recipe);
         if (null != simpleRecipe) {
             if (simpleRecipe.lockPrice) {
@@ -140,7 +141,8 @@ public class GuiRecipeButton extends GuiButton {
                 y -= 1;
                 height += 1;
                 hasBeenMove = true;
-                mc.getSoundHandler().playSound(FakeSubtitleSound.getRecord(SoundEvents.ENTITY_ITEM_PICKUP, 0.5f, 0.05F, "fasttrading.subtitles.buttonswitching"));
+                //TODO 这里做了个强转
+                mc.getSoundHandler().play((ISound) FakeSubtitleSound.getRecord(SoundEvents.ENTITY_ITEM_PICKUP, 0.5f, 0.05F, "fasttrading.subtitles.buttonswitching"));
             } else if (!shouldDraw && hasBeenMove) {
                 x += 1;
                 y += 1;
@@ -163,7 +165,7 @@ public class GuiRecipeButton extends GuiButton {
         {
             if (i == 0)
             {
-                list.set(i, stack.getRarity().rarityColor + (String)list.get(i));
+                list.set(i, stack.getRarity().color + (String)list.get(i));
             }
             else
             {

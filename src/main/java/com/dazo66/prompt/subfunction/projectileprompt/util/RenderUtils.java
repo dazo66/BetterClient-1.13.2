@@ -63,7 +63,7 @@ public final class RenderUtils {
         GlStateManager.enableColorMaterial();
         GlStateManager.depthFunc(515);
         GlStateManager.enableDepthTest();
-        GlStateManager.enableAlpha();
+        GlStateManager.enableAlphaTest();
         mc.getFramebuffer().bindFramebuffer(false);
         GlStateManager.disableOutlineMode();
         GlStateManager.disableColorMaterial();

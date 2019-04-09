@@ -18,7 +18,7 @@ public class HealthPromptRender {
     public static void renderVignette() {
         ScaledResolution scaledResolution = new ScaledResolution(mc);
         GlStateManager.disableDepthTest();
-        GlStateManager.enableAlpha();
+        GlStateManager.enableAlphaTest();
         GlStateManager.enableBlend();
         GlStateManager.depthMask(false);
         GlStateManager.tryBlendFuncSeparate(0, 769, 1, 0);

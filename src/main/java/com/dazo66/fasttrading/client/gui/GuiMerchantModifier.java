@@ -42,7 +42,7 @@ public class GuiMerchantModifier {
     private Container inventoryPlayer;
     private Method clickMethod;
     private IMerchant iMerchant;
-    private List<GuiButton> buttonList;
+    private List<GuiButton> buttons;
     private int lastClickTime;
     private GuiButton lastClickButton;
     private ArrayList<GuiRecipeButton> recipeButtonList = new ArrayList<>();
@@ -52,7 +52,8 @@ public class GuiMerchantModifier {
 //        super(inventoryPlayer, iMerchant, worldIn);
         gui = guiMerchant;
         helper = new TradingHelper(this);
-        buttonList = guiMerchant.buttonList;
+        //buttonList = guiMerchant.buttonList;
+        buttons = guiMerchant.buttons;
         inventoryPlayer = guiMerchant.inventorySlots;
         iMerchant = guiMerchant.getMerchant();
         //handleClick
@@ -66,7 +67,7 @@ public class GuiMerchantModifier {
     }
 
     private void resetButton(){
-        buttonList = gui.buttonList;
+        buttons = gui.buttons;
         recipeButtonList.clear();
         buttonMap.clear();
         addMerchantButton(merchantRecipeList);
@@ -89,7 +90,7 @@ public class GuiMerchantModifier {
             ((GuiRecipeButton) button0).tryProminent(mc, mouseX, mouseY, p, true);
             ((GuiRecipeButton) button0).tryRenderItemTooltip(mouseX, mouseY);
         }
-        for (GuiButton button : buttonList) {
+        for (GuiButton button : buttons) {
             if (button instanceof GuiButtonPlus) {
                 ((GuiButtonPlus) button).drawTooltip(mc, mouseX, mouseY);
             }
@@ -139,7 +140,7 @@ public class GuiMerchantModifier {
 
     private GuiButton getFirstButton() {
         ArrayList<GuiButton> list = new ArrayList<>();
-        for (GuiButton button : buttonList) {
+        for (GuiButton button : buttons) {
             if (button.isMouseOver()) {
                 list.add(button);
             }
@@ -237,12 +238,12 @@ public class GuiMerchantModifier {
         subtractButton = new GuiIconButton(253, guiLeft + 14, guiTop + 3, 10, 10, ItemStackUtils.tooltipI18n("fasttrading.tooltip.removebutton"), SUBTRACT);
         lockButton = new GuiIconButton(254, guiLeft + 25, guiTop + 3, 10, 10, ItemStackUtils.tooltipI18n("fasttrading.tooltip.lockbutton"), LOCK);
         unlockButton = new GuiIconButton(255, guiLeft + 25, guiTop + 3, 10, 10, ItemStackUtils.tooltipI18n("fasttrading.tooltip.unlockbutton"), UNLOCK);
-        buttonList.add(onButton);
-        buttonList.add(offButton);
-        buttonList.add(addButton);
-        buttonList.add(subtractButton);
-        buttonList.add(lockButton);
-        buttonList.add(unlockButton);
+        buttons.add(onButton);
+        buttons.add(offButton);
+        buttons.add(addButton);
+        buttons.add(subtractButton);
+        buttons.add(lockButton);
+        buttons.add(unlockButton);
         buttonMap.put("onButton", onButton);
         buttonMap.put("offButton", offButton);
         buttonMap.put("addButton", addButton);
@@ -306,12 +307,12 @@ public class GuiMerchantModifier {
         }
         for (MerchantRecipe merchantRecipe : list) {
             GuiRecipeButton button = new GuiRecipeButton(300 + i++, gui.getGuiLeft() - 89 - 1, top - spacing + i * spacing, this, merchantRecipe);
-            for (GuiButton button1 : buttonList) {
+            for (GuiButton button1 : buttons) {
                 if (button1.id == button.id) {
                     return;
                 }
             }
-            buttonList.add(button);
+            buttons.add(button);
             recipeButtonList.add(button);
         }
     }
